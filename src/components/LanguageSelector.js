@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
+import React from 'react';
 import '../css/LanguageSelector.css'
 
-export default function LanguageSelector() {
-    const [language, setLanguage] = useState("English")
+export default function LanguageSelector({ language, setLanguage }) {
     const languages = ["English", "Portuguese", "Spanish"]
 
     return (

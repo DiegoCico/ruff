@@ -1,24 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import '../css/Dash.css'
 import CallCard from '../components/CallCard'
 import ReportCard from '../components/ReportCard'
 import LanguageSelector from '../components/LanguageSelector'
+import Contact from '../components/Contact'
+import { API_BASE_URL } from '../config';
 
 export default function Dash() {
-    const [language, setLanguage] = useState('english')
+    // TODO:
+    // fetch user language from database
+    const [language, setLanguage] = useState('English')
+    const { uid } = useParams()
+    console.log(uid)
+
+    useEffect(() => {
+        const fetchUserData = async() => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/home`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+
+                    },
+                    body: JSON.stringify({ uid })
+                })
+
+                const result = await response.json()
+
+                if (response.ok) {
+                    console.log(result)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchUserData()
+    }, [uid])
+
     return (
         <div className='dashboard-container'>
             <div className='dashboard-card'>
                 <div className='dashboard-header'>
-                    Home
-                    <LanguageSelector />
+                    <div className='header-left'>
+                        Home
+                    </div>
+                    <div className='header-right'>
+                        <LanguageSelector language={language} setLanguage={setLanguage} />
+                        <Contact />
+                    </div>
                 </div>
                 <div className='dashboard-content'>
                     <div className="profile-section">
                         <div className="profile-image"></div> {/* fetch from server */}
                         <div className="profile-info">
                             <h2>Sarah Johnson</h2>
-                            <p><strong>Age:</strong> 34 years</p>
+                            <p><strong>Age:</strong> 34</p>
                             <p>Sarah has been a patient since January 2023. She is currently undergoing treatment for anxiety and depression. Her progress has been steady, with significant improvements noted in the last three months.</p>
                             <div className="badges">   {/* fetch from server */}
                                 <span className="badge active">Active Patient</span>
