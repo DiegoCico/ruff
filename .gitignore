@@ -8,6 +8,7 @@
 backend/venv/
 backend/servicekey.json
 backend/secrets.config
+backend/firebase.js
 
 src/firebase.js
 src/firebase.js

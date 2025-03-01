@@ -12,6 +12,8 @@ export default function Dash() {
     // fetch user language from database
     const [language, setLanguage] = useState('')
     const [userData, setUserData] = useState({})
+    const [calls, setCalls] = useState([])
+    const [reports, setReports] = useState([])
     const { uid } = useParams()
     console.log(uid)
 
@@ -33,6 +35,8 @@ export default function Dash() {
                     console.log(result)
                     setLanguage(result.userData.lang)
                     setUserData(result.userData.personal)
+                    setCalls(result.calls)
+                    setReports(result.reports)
                 }
             } catch (error) {
                 console.log(error)
@@ -95,7 +99,7 @@ export default function Dash() {
                             <h2>{userData.firstName} {userData.lastName}</h2>
                             <p><strong>{languageSettings[language]?.Age || 'Age'}:</strong>{getAge(userData.dob)}</p>
                             <p>Sarah has been a patient since January 2023. She is currently undergoing treatment for anxiety and depression. Her progress has been steady, with significant improvements noted in the last three months.</p>
-                            <div className="badges">   {/* fetch from server */}
+                            <div className="badges">   {/* replace with 'Schedule a Visit' btn */}
                                 <span className="badge active">Active Patient</span>
                                 <span className="badge weekly">Weekly Sessions</span>
                             </div>
@@ -105,11 +109,20 @@ export default function Dash() {
                     <div className="main-sections">
                         <div className="left-section">
                             <h3><span className="material-icons">call</span>{languageSettings[language]?.Call_Records || 'Calls Made'}</h3>
-                            <CallCard date="March 15, 2025" time="10:30 AM" duration="15" />
+                            {calls.length > 0 ? (
+                                <div>
+                                    {calls.map((call, index) => (
+                                        
+                                        <CallCard key={index} date={call.timestamp} duration="15" transcription={call.transcription} fName={userData.firstName} language={language} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <h2>No calls yet</h2>
+                            )}
                         </div>
                         <div className="right-section">
                             <h3><span className="material-icons">description</span>{languageSettings[language]?.Reports || 'Reports'}</h3>
-                            <ReportCard title="Initial Assessment" date="March 15, 2025" language={language}/>
+                            <ReportCard language={language}/>
                         </div>
                     </div>
                 </div>

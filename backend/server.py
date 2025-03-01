@@ -6,6 +6,8 @@ import time
 import os
 from dotenv import load_dotenv
 from firebase_admin import firestore
+from datetime import datetime
+from analysis import analyze_report
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 secrets_path = os.path.join(basedir, "secrets.config")
@@ -64,40 +66,71 @@ def recording_complete():
 
 @app.route("/transcription_complete", methods=["POST"])
 def transcription_complete():
-    """Stores transcription data in Firebase after a short wait.
-       If the phone number belongs to a user, saves under their account's 'transcriptions' subcollection.
-       Otherwise, saves under the 'calls' collection with a subcollection named with the call time.
-    """
+    """Stores transcription data in Firebase under 'transcriptions' with a timestamp."""
     try:
         time.sleep(5)
         phone_number = request.form.get("From")
         transcription_text = request.form.get("TranscriptionText")
         
         if not phone_number or not transcription_text:
-            print("Transcription complete callback received without phone number or transcription text")
-            return "No data", 200
-        
+            print("⚠️ Transcription callback received without phone number or transcription text")
+            return "No data", 400
+
         transcription_data = {
             "transcription": transcription_text,
             "timestamp": firestore.SERVER_TIMESTAMP
         }
-        
+
+        # Check if user exists
         user_query = db.collection("users").where("phoneNumber", "==", phone_number).limit(1).get()
-        if user_query:
+        if user_query and len(user_query) > 0:
             user_doc_id = user_query[0].id
+
+            # Store transcription under the 'transcriptions' collection
             db.collection("users").document(user_doc_id).collection("transcriptions").add(transcription_data)
-            print("Transcription saved under user account:", transcription_text)
+            print(f"✅ Transcription saved under user account: {transcription_text}")
+
+            # Also analyze and store report
+            result = analyze_and_store_report(transcription_text, user_doc_id)
+            return jsonify(result), 200
         else:
+            # Store for unknown users
             call_time = time.strftime("%Y-%m-%d_%H-%M-%S")
-            db.collection("calls").document(phone_number).collection(call_time).add({
-                "transcription": transcription_text
-            })
-            print("Transcription saved under calls collection:", transcription_text)
-            
+            db.collection("calls").document(phone_number).collection("transcriptions").add(transcription_data)
+            print(f"⚠️ Transcription saved under unknown calls collection: {transcription_text}")
+
         return "Transcription saved!", 200
     except Exception as e:
-        print("Error in transcription_complete:", str(e))
-        return f"Invalid transcription data: {str(e)}", 400
+        print(f"❌ Error in transcription_complete: {str(e)}")
+        return jsonify({"error": f"Invalid transcription data: {str(e)}"}), 400
+
+
+def analyze_and_store_report(transcription, user_id):
+    try:
+        report_data = analyze_report(transcription)
+        timestamp = firestore.SERVER_TIMESTAMP
+        user_ref = db.collection("users").document(user_id)
+
+        # Check if user exists
+        if not user_ref.get().exists:
+            print(f"⚠️ User with ID {user_id} not found in Firestore!")
+            return {"error": f"User with ID: {user_id} not found"}
+
+        # Store report under 'reports' collection
+        report_ref = user_ref.collection("reports").add({
+            "transcription": transcription,
+            "diseases": report_data["diseases"],
+            "call_logistics": report_data["call_logistics"],
+            "timestamp": timestamp
+        })
+
+        print(f"✅ Report successfully stored! Report ID: {report_ref.id}")
+        return {"message": "Report successfully stored", "report_id": report_ref.id}
+
+    except Exception as e:
+        print(f"❌ Error storing report: {str(e)}")
+        return {"error": f"Failed to store report: {str(e)}"}
+
 
 @app.route('/server', methods=['POST', 'GET', 'OPTIONS'])
 def server():
@@ -198,7 +231,26 @@ def home():
             return jsonify({'error': f"User with ID: {user_id} does not exist"})
         
         user_data = user_doc.to_dict()
-        return jsonify({'message': 'Fetched user data successfully', 'uid': user_id, 'userData': user_data})
+
+        calls_ref = user_ref.collection('transcriptions')
+        calls = calls_ref.stream()
+
+        try:
+            calls_list = sorted(
+                [doc.to_dict() for doc in calls],
+                key=lambda call: call['timestamp'],
+                reverse=True
+            )
+        except Exception as e:
+            return jsonify({'error':f'Calls list error {str(e)}'})
+
+        reports_ref = user_ref.collection('reports')
+        reports = reports_ref.stream()
+        reports_list = [
+            doc.to_dict() for doc in reports
+        ]
+
+        return jsonify({'message': 'Fetched user data successfully', 'uid': user_id, 'userData': user_data, 'calls':calls_list, 'reports': reports_list})
     except Exception as e:
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 

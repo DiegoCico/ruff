@@ -2,7 +2,7 @@ import React from 'react';
 import '../css/ReportCard.css'
 import { languageSettings } from '../config'
 
-export default function ReportCard({ title, date, language }) {
+export default function ReportCard({ language }) {
     return (
         <div className="report-card">
             <div className="report-details">
