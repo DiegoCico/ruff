@@ -25,6 +25,7 @@ export default function Dash() {
                     <div className="main-sections">
                         <div className="left-section">
                             <h3><span className="material-icons">call</span>Calls Made</h3>
+                            <CallCard date="March 15, 2025" time="10:30 AM" duration="15" />
                         </div>
                         <div className="right-section">
                             <h3><span className="material-icons">description</span>Reports</h3>
