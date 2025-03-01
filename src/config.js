@@ -70,7 +70,8 @@ export const languageSettings = {
         Contact_us : "Contact Us",
         Close : "Cerrar",
         Yes : "Sí",
-        No : "No"
+        No : "No",
+        Authentication : "Phone Authentication"
     }, 
     Portuguese: {
         English : "Ingles",
@@ -142,7 +143,8 @@ export const languageSettings = {
         Contact_us: "Fale Conosco",
         Close: "Fechar",
         Yes: "Sim",
-        No: "Não"
+        No: "Não",
+        Authentication : "Autenticação de telefone"
     },
     Spanish: {
         English : "English",
@@ -214,8 +216,8 @@ export const languageSettings = {
         Contact_us : "Contáctanos", 
         Close : "Cerrar",
         Yes : "Sí",
-        No : "No"
-        
+        No : "No",
+        Authentication : "Autenticación de teléfono"
     }
 }
 
