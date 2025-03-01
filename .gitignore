@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 
+backend/venv/
+backend/servicekey.json
+backend/secrets.config
+
 # testing
 /coverage
 

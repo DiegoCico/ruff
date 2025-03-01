@@ -7,17 +7,22 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "concurrently": "^9.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router-dom": "^7.2.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
+  "start": "concurrently \"npm run react-start\" \"npm run flask-start\" \"npm run ngrok-start\"",
+  "react-start": "react-scripts start",
+  "flask-start": "backend/venv/bin/python backend/server.py",
+  "ngrok-start": "ngrok http 5000 > /dev/null & sleep 3 && node src/updateTwilioWebhook.js",
+  "build": "react-scripts build",
+  "test": "react-scripts test",
+  "eject": "react-scripts eject"
+},
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -35,5 +40,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "ngrok": "^5.0.0-beta.2"
   }
 }
