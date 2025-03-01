@@ -1,35 +1,61 @@
+/* Full-page container */
 .login-container {
-  width: 300px;
-  margin: auto;
-  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Card-style login box */
+.login-card {
+  width: 400px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   text-align: center;
-  border-radius: 8px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  padding: 30px;
 }
 
-h2 {
-  margin-bottom: 15px;
-  font-size: 20px;
-  color: #333;
+/* Header styling */
+.login-header {
+  background: #79AEB2;
+  color: white;
+  padding: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
+/* Input field styles */
 input {
   width: 90%;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 12px;
+  margin: 12px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
 }
 
+/* Button styles */
 button {
   width: 100%;
-  padding: 10px;
-  background-color: #007bff;
+  padding: 12px;
+  background-color: #79AEB2;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+  background-color: #5c8e90;
 }
 
 button:disabled {
@@ -37,8 +63,22 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Error message styles */
 .error {
   color: red;
   font-size: 14px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+/* Divider */
+.divider {
+  border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin: 20px 0;
+}
+
+/* Recaptcha Container */
+#recaptcha-container {
+  margin-top: 10px;
 }

@@ -9,6 +9,9 @@ backend/venv/
 backend/servicekey.json
 backend/secrets.config
 
+src/firebase.js
+src/firebase.js
+
 # testing
 /coverage
 

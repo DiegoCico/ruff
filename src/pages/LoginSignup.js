@@ -11,7 +11,6 @@ const LoginSignup = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Ensure reCAPTCHA is rendered when component loads
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
@@ -21,7 +20,7 @@ const LoginSignup = () => {
   }, []);
 
   const isValidPhoneNumber = (number) => {
-    const phoneRegex = /^\+\d{10,15}$/; // Ensure proper E.164 format
+    const phoneRegex = /^\+\d{10,15}$/;
     return phoneRegex.test(number);
   };
 
@@ -35,7 +34,6 @@ const LoginSignup = () => {
 
       setLoading(true);
       const appVerifier = window.recaptchaVerifier;
-
       const confirmation = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       setConfirmationResult(confirmation);
       alert("OTP sent! Check your messages.");
@@ -65,10 +63,11 @@ const LoginSignup = () => {
 
   return (
     <div className="login-container">
-      <h2>Phone Authentication</h2>
-      {error && <p className="error">{error}</p>}
+      <div className="login-card">
+        <div className="login-header">Phone Authentication</div>
 
-      <div>
+        {error && <p className="error">{error}</p>}
+
         <input
           type="tel"
           placeholder="Enter phone number (e.g., +15551234567)"
@@ -78,23 +77,23 @@ const LoginSignup = () => {
         <button onClick={sendOtp} disabled={loading || !phoneNumber}>
           {loading ? "Sending..." : "Send OTP"}
         </button>
+
+        {confirmationResult && (
+          <>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+            <button onClick={verifyOtp} disabled={loading || !otp}>
+              {loading ? "Verifying..." : "Verify OTP"}
+            </button>
+          </>
+        )}
+
+        <div id="recaptcha-container"></div>
       </div>
-
-      {confirmationResult && (
-        <div>
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
-          <button onClick={verifyOtp} disabled={loading || !otp}>
-            {loading ? "Verifying..." : "Verify OTP"}
-          </button>
-        </div>
-      )}
-
-      <div id="recaptcha-container"></div>
     </div>
   );
 };
