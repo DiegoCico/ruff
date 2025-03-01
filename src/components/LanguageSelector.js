@@ -1,17 +1,50 @@
-import React from 'react';
+import React, {useState} from 'react';
 import '../css/LanguageSelector.css'
+import { languageSettings } from '../config'
 
-export default function LanguageSelector({ language, setLanguage }) {
+export default function LanguageSelector({ language, setLanguage, updateLang }) {
     const languages = ["English", "Portuguese", "Spanish"]
+    // const languages = [languageSettings[language]?.English || 'English', languageSettings[language]?.English || 'Portuguese']
+    const [showPopup, setShowPopup] = useState(false)
+    const [newLang, setNewLang] = useState("")
+
+    const handleLanguageChange = (e) => {
+        const selectedLang = e.target.value
+
+        if (selectedLang !== language) {
+            setNewLang(selectedLang)
+            setShowPopup(true)
+        }
+    }
+
+    const confirmLangChange = () => {
+        setLanguage(newLang)
+        setShowPopup(false)
+        updateLang(newLang)
+    }
 
     return (
-        <div className="language-selector">
-            <span className="material-icons">public</span>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                {languages.map((lang) => (
-                    <option key={lang} value={lang}>{lang}</option>
-                ))}
-            </select>
+        <div className="language-selector-container">
+            <div className="language-selector">
+                <span className="material-icons">public</span>
+                <select value={language} onChange={handleLanguageChange}>
+                    {languages.map((lang) => (
+                        <option key={lang} value={lang}>{lang}</option>
+                    ))}
+                </select>
+            </div>
+
+            {showPopup && (
+                <div className="language-popup-overlay">
+                    <div className="language-popup">
+                        <p>Are you sure you want to change the language to <strong>{newLang}</strong>?</p>
+                        <div className="popup-buttons">
+                            <button className="confirm-button" onClick={confirmLangChange}>Yes</button>
+                            <button className="cancel-button" onClick={() => setShowPopup(false)}>No</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

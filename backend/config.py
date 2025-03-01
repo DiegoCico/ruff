@@ -1,10 +1,9 @@
-# backend/config.py
 import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth  
 
 # Determine the absolute path to the secrets file.
 basedir = os.path.abspath(os.path.dirname(__file__))

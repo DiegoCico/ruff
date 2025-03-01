@@ -1,4 +1,4 @@
-.language-selector {
+/* .language-selector {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.2);
@@ -19,4 +19,94 @@
 }
 .language-selector .material-icons {
     margin-right: 8px;
+} */
+
+/* Language Selector */
+.language-selector {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+.language-selector select {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.language-selector select:focus {
+    outline: none;
+}
+
+.language-selector .material-icons {
+    margin-right: 8px;
+}
+
+/* Popup Overlay */
+.language-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Popup Box */
+.language-popup {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+    width: 350px;
+    color: black;
+}
+
+/* Popup Buttons */
+.popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.confirm-button {
+    background: #5F8B97;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    width: 45%;
+}
+
+.cancel-button {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    width: 45%;
+}
+
+.confirm-button:hover {
+    background: #4A707D;
+}
+
+.cancel-button:hover {
+    background: #c9302c;
 }
