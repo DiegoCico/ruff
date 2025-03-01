@@ -71,6 +71,7 @@ export const languageSettings = {
         Symptom_Progression : "Progresión de sintomas",
         Previous_Misdiagnoses : "Diagnósticos erróneos previos",
         Developmental_Milestones : "Hitos de desarrollo",
+        Find_a_Community : "Encuentra "
     }
 }
 
