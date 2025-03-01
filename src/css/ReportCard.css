@@ -1,4 +1,4 @@
-.call-card {
+.report-card {
     position: relative;
     display: flex;
     justify-content: space-between;
@@ -9,30 +9,39 @@
     margin-top: 10px;
     transition: border-color 0.3s ease-in-out;
 }
-.call-card:hover {
+
+.report-card:hover {
     border-color: #5F8B97;
 }
-.call-duration {
+
+.report-icon {
+    color: #8BC34A;
+}
+
+.report-status {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: #5F8B97;
-    color: white;
     padding: 5px 12px;
     border-radius: 15px;
     font-weight: bold;
     font-size: 12px;
-    margin: 5px;
 }
-.call-details h4, .call-details p {
-    margin: 5px 0;
+
+.report-status.completed {
+    background: #8BC34A;
+    color: white;
 }
-.transcript-link {
-    color: #5F8B97;
-    font-weight: bold;
+
+.view-report {
+    background: #5F8B97;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
     cursor: pointer;
 }
 
-.call-icon {
-    color: #8BC34A;
+.view-report:hover {
+    background: #4A707D;
 }

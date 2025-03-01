@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../css/Dash.css'
+import CallCard from '../components/CallCard'
+import ReportCard from '../components/ReportCard'
+import LanguageSelector from '../components/LanguageSelector'
 
 export default function Dash() {
+    const [language, setLanguage] = useState('english')
     return (
         <div className='dashboard-container'>
             <div className='dashboard-card'>
                 <div className='dashboard-header'>
-                    Patient Home
+                    Home
+                    <LanguageSelector />
                 </div>
                 <div className='dashboard-content'>
                     <div className="profile-section">
@@ -29,6 +34,7 @@ export default function Dash() {
                         </div>
                         <div className="right-section">
                             <h3><span className="material-icons">description</span>Reports</h3>
+                            <ReportCard title="Initial Assessment" date="March 15, 2025" status="Completed" />
                         </div>
                     </div>
                 </div>

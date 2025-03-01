@@ -1,0 +1,21 @@
+.language-selector {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+.language-selector select {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.language-selector select:focus {
+    outline: none;
+}
+.language-selector .material-icons {
+    margin-right: 8px;
+}
