@@ -59,7 +59,7 @@ function CallRecordsHeatmap({ calls }) {
 
     return (
         <div className="call-heatmap-container">
-            <h3 className="heatmap-title">Call Records Contributions</h3>
+            <h3 className="heatmap-title">Call Records Frequency</h3>
             <div className="heatmap-grid">
                 {weeks.map((week, i) => (
                     <div key={i} className="heatmap-week">

@@ -1,70 +1,68 @@
-# Getting Started with Create React App
+# Ruff - Medical Symptom Analysis and Call Handling
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Purpose
+Ruff is an AI-powered medical symptom analysis and call-handling system designed to assist individuals in assessing their symptoms through voice interactions. By leveraging natural language processing and sentiment analysis, Ruff aims to provide users with insights into potential health conditions and direct them to appropriate medical resources.
 
-## Available Scripts
+## Features
+- **Twilio Integration**: Handles incoming calls via the Twilio number **+1 833 365 8247**, records responses, and transcribes them.
+- **AI Symptom Analysis**: Uses NLP and fuzzy string matching to identify potential diseases.
+- **Sentiment Analysis**: Determines the tone of the call using VADER sentiment analysis.
+- **Named Entity Recognition**: Extracts relevant details like dates, locations, and numbers from descriptions.
+- **Firebase Integration**: Stores user call records, transcriptions, and analyzed reports.
+- **Web App with React**: Provides a frontend dashboard for users to view their call history, reports, and schedule appointments.
+- **Multilingual Support**: Currently available in **English, Spanish, and Portuguese** to assist a wider range of users.
 
-In the project directory, you can run:
+## Technologies Used
+### Backend (Flask API)
+- Python
+- Flask
+- Twilio API
+- Firebase Admin SDK
+- NLTK (Natural Language Toolkit)
+- SpaCy
+- RapidFuzz (Fuzzy Matching)
+- Matplotlib (Data Visualization)
 
-### `npm start`
+### Frontend (React App)
+- ReactJS
+- Firebase Authentication
+- Tailwind CSS
+- jsPDF (for PDF generation)
+- React Router
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Usage
+### Handling Calls
+- A user calls the Twilio number **+1 833 365 8247**.
+- The system records and transcribes the call.
+- The transcription is analyzed for symptoms and sentiment.
+- A report is generated and stored in Firebase.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Viewing Reports
+- Users log into the React dashboard.
+- They can view past call logs, medical analysis reports, and sentiment evaluations.
+- The system provides a probability-based analysis of possible medical conditions.
+- Users can download their reports as PDFs.
 
-### `npm test`
+## API Endpoints
+### Call Handling
+- `POST /answer` - Answers an incoming call and starts recording.
+- `POST /recording_complete` - Saves the recording URL in Firebase.
+- `POST /transcription_complete` - Analyzes the transcription and stores a report.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### User Management
+- `POST /api/check-phone` - Checks if a phone number exists in the database.
+- `POST /api/signup` - Creates a new user with personal details.
+- `POST /api/change-lang` - Updates the user’s preferred language.
 
-### `npm run build`
+### Webhook Management
+- `GET /update_twilio_webhook` - Updates Twilio webhook with the latest Ngrok tunnel URL.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Future Work
+- **Multilingual Support**: Expand language capabilities to cater to a broader audience.
+- **Integration with Healthcare Providers**: Enable direct booking of medical appointments.
+- **Enhanced AI Diagnosis**: Improve the NLP model with deep learning for better accuracy.
+- **Voice-Based Assistant**: Implement a conversational AI to guide users in real time.
+- **Emergency Services Integration**: Automatically detect severe symptoms and provide emergency contact options.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This project is continuously evolving, with ongoing efforts to enhance its accuracy, usability, and accessibility.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
