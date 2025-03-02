@@ -30,8 +30,9 @@ const LoginSignup = () => {
     }
   }, []);
 
+  // Updated to require +1 followed by exactly 10 digits
   const isValidPhoneNumber = (number) => {
-    const phoneRegex = /^\+\d{10,15}$/;
+    const phoneRegex = /^\+1\d{10}$/;
     return phoneRegex.test(number);
   };
 
@@ -39,7 +40,7 @@ const LoginSignup = () => {
     try {
       setError("");
       if (!isValidPhoneNumber(phoneNumber)) {
-        setError("Enter a valid phone number (e.g., +15551234567)");
+        setError("Enter a valid US phone number (e.g., +15551234567)");
         return;
       }
       setLoading(true);
@@ -137,6 +138,7 @@ const LoginSignup = () => {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="fadeIn"
+              pattern="\+1\d{10}"
             />
             <button
               onClick={sendOtp}

@@ -2,17 +2,53 @@ import csv
 import re
 import os
 import math
+import string
 import matplotlib.pyplot as plt
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from rapidfuzz import fuzz  # For fuzzy string matching
 import spacy  # For named entity recognition
+import contractions  # To expand contractions
 
 # Load spaCy's small English model.
 nlp = spacy.load("en_core_web_sm")
 
+# Define a dictionary of colloquial phrases and their normalized forms.
+COLLOQUIAL_MAP = {
+    "i've": "i have",
+    "i'm": "i am",
+    "gonna": "going to",
+    "wanna": "want to",
+    "gotta": "have to",
+    "a lot of": "many",
+    "lots of": "many",
+    "fever going in and out": "intermittent fever",
+    "fever coming and going": "intermittent fever",
+    "migraine headaches": "migraine",
+    "migraines": "migraine",
+    "headaches": "headache",
+    "head pain": "headache",
+    "tummy ache": "abdominal pain",
+    "stomach ache": "abdominal pain",
+    "puking": "vomiting",
+    "throwing up": "vomiting",
+    "feelin": "feeling",
+    "ain't": "is not",
+    "coughin": "coughing",
+    "dizzy spells": "dizziness",
+    # Add more phrases as needed
+}
+
+def apply_colloquial_replacements(text):
+    """
+    Replace colloquial expressions with their normalized counterparts.
+    """
+    for phrase, replacement in COLLOQUIAL_MAP.items():
+        pattern = re.compile(re.escape(phrase), re.IGNORECASE)
+        text = pattern.sub(replacement, text)
+    return text
+
 DISEASES = []
-# Update the PATH variable if your TSV file is located elsewhere.
-PATH = "./data/stanford.tsv"
+PATH = "backend/data/stanford.tsv"
 
 def load_diseases(tsv_path=PATH):
     """
@@ -32,30 +68,50 @@ def load_diseases(tsv_path=PATH):
     except Exception as e:
         print("Error loading diseases TSV:", e)
 
+def normalize_text(text):
+    """
+    Normalize input text by applying the following steps:
+      1. Expand contractions (e.g. "I've" -> "I have").
+      2. Replace colloquial expressions using a predefined dictionary.
+      3. Remove punctuation.
+      4. Lemmatize tokens using spaCy.
+      5. Lowercase the resulting text.
+    This helps capture both casual and formal expressions.
+    """
+    # Expand contractions
+    text = contractions.fix(text)
+    # Apply colloquial replacements
+    text = apply_colloquial_replacements(text)
+    # Remove punctuation
+    text = text.translate(str.maketrans("", "", string.punctuation))
+    # Process with spaCy and lemmatize
+    doc = nlp(text)
+    normalized = " ".join([token.lemma_ for token in doc])
+    return normalized.lower()
+
 def softmax(scores):
     """
     Converts a list of scores into probabilities using the softmax function.
     Handles empty score list gracefully.
     """
-    if not scores:  # Check for empty list
+    if not scores:
         return []
     exp_scores = [math.exp(score) for score in scores]
     sum_exp_scores = sum(exp_scores)
     if sum_exp_scores == 0:
-        # Avoid division by zero; return equal probabilities
         return [1 / len(scores)] * len(scores)
     return [exp_score / sum_exp_scores for exp_score in exp_scores]
 
 def analyze_transcription(transcription):
     """
-    Analyze the transcription text by matching keywords from the disease data.
-    Uses both exact (word-boundary) and fuzzy matching to improve accuracy.
-    Returns the top three diseases with:
+    Analyze your symptom description by matching your normalized words
+    against our disease database using exact and fuzzy matching.
+    Returns the top three candidate conditions with:
       - computed probabilities (via softmax)
-      - a detailed score breakdown (exact & fuzzy matches)
+      - a detailed breakdown of the matches
       - a confidence indicator.
     """
-    transcription_lower = transcription.lower()
+    normalized_text = normalize_text(transcription)
     scored_diseases = []
 
     for disease in DISEASES:
@@ -68,42 +124,42 @@ def analyze_transcription(transcription):
         }
         matched_keywords = []
 
-        # Retrieve and lower-case the disease name and synonyms.
+        # Retrieve disease name and synonyms.
         name = disease.get("Name", "").lower()
         synonyms = disease.get("Synonym", "").lower()
         
-        # Process disease name: Exact match then fuzzy matching.
+        # Check the disease name: exact then fuzzy matching.
         if name:
-            if re.search(r'\b' + re.escape(name) + r'\b', transcription_lower):
+            if re.search(r'\b' + re.escape(name) + r'\b', normalized_text):
                 score += 2
                 breakdown["exact_match_name"] = True
                 matched_keywords.append(name)
             else:
-                ratio = fuzz.partial_ratio(name, transcription_lower)
+                ratio = fuzz.partial_ratio(name, normalized_text)
                 if ratio > 80:
                     fuzzy_score = 2 * (ratio / 100)
                     score += fuzzy_score
                     breakdown["fuzzy_match_name_score"] = round(fuzzy_score, 2)
                     matched_keywords.append(name + f" (fuzzy:{ratio})")
         
-        # Process synonyms: Tokenize and apply both matching techniques.
+        # Process synonyms: tokenize and match.
         if synonyms:
             tokens = re.split(r'[\s,\[\]]+', synonyms)
             for token in tokens:
                 if token:
-                    if re.search(r'\b' + re.escape(token) + r'\b', transcription_lower):
+                    if re.search(r'\b' + re.escape(token) + r'\b', normalized_text):
                         score += 1
                         breakdown["exact_match_tokens"].append(token)
                         matched_keywords.append(token)
                     else:
-                        ratio = fuzz.partial_ratio(token, transcription_lower)
+                        ratio = fuzz.partial_ratio(token, normalized_text)
                         if ratio > 80:
                             fuzzy_token_score = 1 * (ratio / 100)
                             score += fuzzy_token_score
                             breakdown["fuzzy_match_tokens"].append({token: round(fuzzy_token_score, 2)})
                             matched_keywords.append(token + f" (fuzzy:{ratio})")
         
-        # Determine confidence based on raw score.
+        # Determine confidence.
         if score >= 4:
             confidence = "High"
         elif score >= 2:
@@ -113,22 +169,19 @@ def analyze_transcription(transcription):
         
         scored_diseases.append((disease, score, breakdown, matched_keywords, confidence))
     
-    # Sort diseases by raw score (highest first) and select the top three.
+    # Sort and select top three.
     scored_diseases.sort(key=lambda x: x[1], reverse=True)
     top3 = scored_diseases[:3]
     
-    # Extract scores for softmax. If no diseases are loaded, return empty list.
     scores = [item[1] for item in top3]
     probabilities = softmax(scores)
     
-    # Build the results list with additional information.
     results = []
     for (disease, raw_score, breakdown, keywords, confidence), prob in zip(top3, probabilities):
         doid = disease.get("Disease(DOID)", "N/A")
         name = disease.get("Name", "N/A")
         definition = disease.get("Definition", "N/A")
         synonyms = disease.get("Synonym", "N/A")
-        # Extract URLs from the definition field.
         urls = re.findall(r'https?://[^\s,\]]+', definition)
         
         results.append({
@@ -148,8 +201,8 @@ def analyze_transcription(transcription):
 
 def analyze_call_logistics(transcription):
     """
-    Performs sentiment analysis on the transcription text using NLTK's VADER.
-    Returns detailed sentiment scores and a predominant tone classification.
+    Uses sentiment analysis (VADER) to gauge the tone of your description.
+    Returns sentiment scores and an overall tone.
     """
     sia = SentimentIntensityAnalyzer()
     sentiment_scores = sia.polarity_scores(transcription)
@@ -173,8 +226,8 @@ def analyze_call_logistics(transcription):
 
 def analyze_named_entities(transcription):
     """
-    Uses spaCy to extract named entities from the transcription.
-    Returns a list of entities with their text and labels.
+    Extracts named entities (like dates, locations, or numbers) from your description.
+    Returns a list of these entities.
     """
     doc = nlp(transcription)
     entities = [{"text": ent.text, "label": ent.label_} for ent in doc.ents]
@@ -182,28 +235,24 @@ def analyze_named_entities(transcription):
 
 def visualize_disease_probabilities(disease_results):
     """
-    Generates a bar chart for the top candidate diseases' probabilities.
+    Creates a bar chart of the candidate conditions’ probabilities.
     """
     names = [res["name"] for res in disease_results]
     probs = [res["probability"] for res in disease_results]
     
     plt.figure()
     plt.bar(names, probs)
-    plt.xlabel("Disease")
+    plt.xlabel("Candidate Condition")
     plt.ylabel("Probability")
-    plt.title("Top Candidate Disease Probabilities")
+    plt.title("Condition Probabilities Based on Your Symptoms")
     plt.show()
 
 def analyze_report(transcription):
     """
-    Combines the disease analysis, sentiment analysis, and named entity recognition
-    into a single report.
-    
-    Returns a dictionary with:
-      - A list of top three candidate diseases (with detailed score breakdowns)
-      - Call logistics (tone & sentiment)
-      - Named entities extracted from the transcription
-      - A summary section highlighting key findings.
+    Combines analysis of your symptom description, tone, and extra details into a report.
+    The report includes:
+      - Top candidate conditions with match details.
+      - A patient-friendly summary.
     """
     diseases = analyze_transcription(transcription)
     call_logistics = analyze_call_logistics(transcription)
@@ -212,16 +261,19 @@ def analyze_report(transcription):
     summary_lines = []
     if diseases:
         top = diseases[0]
-        summary_lines.append(f"Top candidate disease is '{top['name']}' with {top['confidence']} confidence (probability: {top['probability']}).")
+        summary_lines.append(
+            f"Based on what you described, it appears you might be showing signs of '{top['name']}' with {top['confidence']} confidence (estimated probability: {top['probability']})."
+        )
     else:
-        summary_lines.append("No candidate diseases were identified.")
+        summary_lines.append("We couldn’t clearly match your symptoms to a specific condition.")
     
     if named_entities:
         entity_list = ", ".join([f"{ent['text']} ({ent['label']})" for ent in named_entities])
-        summary_lines.append(f"Named entities detected: {entity_list}.")
+        summary_lines.append(f"Additional details we noticed: {entity_list}.")
     else:
-        summary_lines.append("No significant named entities were detected.")
+        summary_lines.append("No extra details were detected in your description.")
     
+    summary_lines.append("Note: This analysis is based solely on your description and is not a formal medical diagnosis.")
     summary = "\n".join(summary_lines)
     
     return {
@@ -234,22 +286,22 @@ def analyze_report(transcription):
 # Load diseases when the module is imported.
 load_diseases()
 
-# Example usage (if running interactively):
+# Example usage:
 if __name__ == "__main__":
     sample_transcription = (
-        "The patient exhibits symptoms similar to angiosarcoma, including abnormal blood vessel growth. "
-        "There are also indications of metabolic issues and possible signs of chikungunya fever."
+        "I've been having a lot of migraines for the past few days, and my fever keeps coming and going. "
+        "Sometimes I feel really weak too."
     )
     report = analyze_report(sample_transcription)
-    print("=== Analysis Report ===")
+    print("=== Your Symptom Analysis Report ===")
     print(report["summary"])
-    print("\nDetailed Disease Candidates:")
+    print("\nDetailed Candidate Conditions:")
     for disease in report["diseases"]:
         print(disease)
-    print("\nCall Logistics:")
+    print("\nTone & Sentiment Analysis:")
     print(report["call_logistics"])
-    print("\nNamed Entities:")
+    print("\nExtracted Details:")
     print(report["named_entities"])
     
-    # Visualize the disease probabilities.
+    # Display a chart of candidate condition probabilities.
     visualize_disease_probabilities(report["diseases"])

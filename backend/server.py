@@ -108,7 +108,7 @@ def transcription_complete():
 def analyze_and_store_report(transcription, user_id):
     try:
         report_data = analyze_report(transcription)
-        timestamp = firestore.SERVER_TIMESTAMP
+        timestamp = firestore.SERVER_TIMESTAMP  # Firestore server-side timestamp
         user_ref = db.collection("users").document(user_id)
 
         # Check if user exists
@@ -116,21 +116,29 @@ def analyze_and_store_report(transcription, user_id):
             print(f"⚠️ User with ID {user_id} not found in Firestore!")
             return {"error": f"User with ID: {user_id} not found"}
 
-        # Store report under 'reports' collection
-        report_ref = user_ref.collection("reports").add({
+        # Build the complete report document with the new data fields.
+        report_document = {
             "transcription": transcription,
             "diseases": report_data["diseases"],
             "call_logistics": report_data["call_logistics"],
+            "named_entities": report_data["named_entities"],
+            "summary": report_data["summary"],
             "timestamp": timestamp
-        })
+        }
 
-        print(f"✅ Report successfully stored! Report ID: {report_ref.id}")
-        return {"message": "Report successfully stored", "report_id": report_ref.id}
+        # Store the report under the user's 'reports' subcollection.
+        report_ref = user_ref.collection("reports").add(report_document)
+
+        # Depending on your Firestore SDK version, report_ref may be a tuple.
+        # For example: (doc_ref, write_result). Adjust as necessary.
+        report_id = report_ref[0].id if isinstance(report_ref, tuple) else report_ref.id
+
+        print(f"✅ Report successfully stored! Report ID: {report_id}")
+        return {"message": "Report successfully stored", "report_id": report_id}
 
     except Exception as e:
         print(f"❌ Error storing report: {str(e)}")
         return {"error": f"Failed to store report: {str(e)}"}
-
 
 @app.route('/server', methods=['POST', 'GET', 'OPTIONS'])
 def server():
