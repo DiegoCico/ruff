@@ -4,12 +4,39 @@ import { languageSettings } from '../config';
 import { jsPDF } from 'jspdf';
 
 export default function ReportCard({ language, report }) {
+    const formatDate = (timestamp) => {
+        if (!timestamp) {
+          return { formattedDate: "N/A", formattedTime: "N/A" };
+        }
+        const parsedDate = new Date(timestamp);
+        if (isNaN(parsedDate.getTime())) {
+          console.error("Failed to parse timestamp:", timestamp);
+          return { formattedDate: "Invalid Date", formattedTime: "Invalid Time" };
+        }
+        const formattedDate = parsedDate.toLocaleDateString("en-US", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "America/New_York",
+        });
+        const formattedTime = parsedDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          timeZone: "America/New_York",
+          timeZoneName: "short",
+        });
+        return { formattedDate, formattedTime };
+      };
+    const {formattedDate, formattedTime} = formatDate(report.timestamp)
+
+    console.log(formattedDate, formattedTime)
     const generateMedicalReportPDF = (reportData) => {
         const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.width - 40; // Max text width (leaving margins)
-        let yPos = 20; // Initial Y position
-    
-        // 🏥 **Title**
+        const pageWidth = doc.internal.pageSize.width - 40; 
+        let yPos = 20; 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
         doc.text("Ruff Medical Insights Report", 20, yPos);
@@ -17,10 +44,9 @@ export default function ReportCard({ language, report }) {
     
         doc.setFontSize(12);
         doc.setFont("helvetica", "normal");
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, yPos);
+        doc.text(`Date: ${formattedDate} • ${formattedTime}`, 20, yPos);
         yPos += 15;
     
-        // 📌 **Summary**
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.text("Summary", 20, yPos);
@@ -40,7 +66,6 @@ export default function ReportCard({ language, report }) {
         doc.text(`Overall Call Sentiment: ${reportData.call_logistics?.predominant_tone || "Unknown"}`, 20, yPos);
         yPos += 15;
     
-        // 📊 **Call Sentiment Analysis**
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.text("Call Sentiment Analysis", 20, yPos);
@@ -54,7 +79,6 @@ export default function ReportCard({ language, report }) {
         doc.text(`Positive Sentiment: ${(reportData.call_logistics?.sentiment_scores?.pos * 100 || 0).toFixed(1)}%`, 20, yPos);
         yPos += 15;
     
-        // 🏥 **Disease Predictions**
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
         doc.text("Disease Predictions", 20, yPos);
@@ -65,7 +89,6 @@ export default function ReportCard({ language, report }) {
             reportData.diseases.forEach((disease, index) => {
                 doc.setFont("helvetica", "bold");
     
-                // 🔹 **Bold Disease Title**
                 const diseaseTitle = `${index + 1}. ${disease.name} (${disease.confidence} Confidence, Probability: ${(disease.probability * 100).toFixed(1)}%)`;
                 const wrappedTitle = doc.splitTextToSize(diseaseTitle, pageWidth);
                 doc.text(wrappedTitle, 20, yPos);
@@ -73,16 +96,14 @@ export default function ReportCard({ language, report }) {
     
                 doc.setFont("helvetica", "normal");
     
-                // 📜 **Description**
                 let description = disease.description || "No description available.";
                 const urlMatches = description.match(/\[url:(https?:\/\/[^\]]+)\]/g) || [];
-                description = description.replace(/\[url:.*?\]/g, ""); // Remove URLs from description text
+                description = description.replace(/\[url:.*?\]/g, ""); 
     
                 const wrappedDescription = doc.splitTextToSize(`- ${description}`, pageWidth);
                 doc.text(wrappedDescription, 20, yPos);
                 yPos += wrappedDescription.length * 6;
     
-                // ✅ **Clickable URLs (One per Bullet Point)**
                 if (urlMatches.length > 0) {
                     doc.setFont("helvetica", "bold");
                     doc.text("Links:", 20, yPos);
@@ -90,21 +111,21 @@ export default function ReportCard({ language, report }) {
                     doc.setFont("helvetica", "normal");
     
                     urlMatches.forEach((match) => {
-                        let url = match.replace("[url:", "").replace("]", "").trim(); // Clean URL
+                        let url = match.replace("[url:", "").replace("]", "").trim(); 
     
-                        if (!url.startsWith("http")) return; // Skip invalid URLs
+                        if (!url.startsWith("http")) return;
     
-                        console.log("Processed URL:", url); // 🔥 Debugging: Check if URLs are formatted correctly
+                        console.log("Processed URL:", url);
     
-                        doc.setTextColor(0, 0, 255); // Set blue color for links
-                        doc.textWithLink(`• ${url}`, 20, yPos, { url }); // Bullet point with clickable link
-                        yPos += 6; // Spacing for next URL
+                        doc.setTextColor(0, 0, 255);
+                        doc.textWithLink(`• ${url}`, 20, yPos, { url });  
+                        yPos += 6;
                     });
     
-                    doc.setTextColor(0, 0, 0); // Reset text color to black
+                    doc.setTextColor(0, 0, 0);
                 }
     
-                // 📌 **Pagination Handling**
+    
                 if (yPos > 260) {
                     doc.addPage();
                     yPos = 20;
@@ -115,26 +136,24 @@ export default function ReportCard({ language, report }) {
             yPos += 10;
         }
     
-        // 📎 **Footer**
         doc.setFontSize(10);
         doc.text("Generated by AI-Powered System | For further medical assistance, consult a professional.", 20, 280);
     
-        // 📄 **Generate PDF and Open it**
         const pdfBlob = doc.output("blob");
         const pdfURL = URL.createObjectURL(pdfBlob);
-        window.open(pdfURL, "_blank"); // Open PDF in a new tab
+        window.open(pdfURL, "_blank");
     };
 
     return (
         <div className="report-card">
             <div className="report-details">
                 <h4>{report?.title || "Medical Report"}</h4>
-                <p><span className="material-icons report-icon">event</span> {report?.timestamp || "Unknown Date"}</p>
+                <p><span className="material-icons report-icon">event</span> {formattedDate} • {formattedTime}</p>
                 <button className="view-report" onClick={() => generateMedicalReportPDF(report)}>
                     {languageSettings[language]?.View_Report || 'View Report'}
                 </button>
             </div>
-            <span className="report-status">{report?.status || "Pending"}</span>
+            {/* <span className="report-status">{report?.status || "Pending"}</span> */}
         </div>
     );
 }

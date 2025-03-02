@@ -254,9 +254,15 @@ def home():
 
         reports_ref = user_ref.collection('reports')
         reports = reports_ref.stream()
-        reports_list = [
-            doc.to_dict() for doc in reports
-        ]
+        # reports_list = [
+        #     doc.to_dict() for doc in reports
+        # ]
+
+        reports_list = sorted(
+            [doc.to_dict() for doc in reports],
+            key=lambda report: report['timestamp'],
+            reverse=True
+        )
 
         return jsonify({'message': 'Fetched user data successfully', 'uid': user_id, 'userData': user_data, 'calls':calls_list, 'reports': reports_list})
     except Exception as e:

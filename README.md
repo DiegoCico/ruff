@@ -64,5 +64,9 @@ Ruff is an AI-powered medical symptom analysis and call-handling system designed
 - **Voice-Based Assistant**: Implement a conversational AI to guide users in real time.
 - **Emergency Services Integration**: Automatically detect severe symptoms and provide emergency contact options.
 
+## Example call usage
+
+- "I noticed a strange, rapidly growing lump on my skin that has unusual red, twisted blood vessels all around it. It’s really concerning because it seems to be spreading quickly."
+- "For the past week, I've had a really high fever, my joints hurt a lot, and I’ve developed a red, bumpy rash on my arms and legs. I feel very worn out."
 This project is continuously evolving, with ongoing efforts to enhance its accuracy, usability, and accessibility.
 
